@@ -9,7 +9,7 @@ class ConfigManager():
             'css': By.CSS_SELECTOR,
             'xpath': By.XPATH,
             'name': By.NAME,
-            'id': By.ID,
+            'ID': By.ID,
             'class': By.CLASS_NAME
         }
         self.BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

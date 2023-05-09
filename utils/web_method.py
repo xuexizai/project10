@@ -7,40 +7,46 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.action_chains import ActionChains
 from functools import partial
 from selenium.webdriver.common.keys import Keys
+import pytest
 
 from test_02.common.readconfigini import url
 from test_02.config.conf import cm
 from test_02.common.read_element import *
 from test_02.utils.logger import log
 
-# @pytest.fixture(scope='session', autouse=True)
-# def initialize_web(request):
+# driver=None
+# @pytest.fixture(scope='class', autouse=True)
+# def drivers(request):
     #这里的request是fixture的一种，用来传递其他fixture参数，在这里主要是继承
     #fixture的一个开头和结束的功能。
-driver = webdriver.Chrome(service=ChromeService(executable_path=ChromeDriverManager().install()))
-url1=url.get('HOST', 'HOST')
-driver.get(url1)
-driver.maximize_window()
+    # global driver
+# if driver is None:
+# driver = webdriver.Chrome(service=ChromeService(executable_path=ChromeDriverManager().install()))
+# url1=url.get('HOST', 'HOST')
+# driver.get(url1)
+    # driver.maximize_window()
     # def end():
     #     driver.quit()
     # request.addfinalizer(end)
     # return driver
 
 class Locate_Element():
-    def __init__(self, ele):
-        self.elemented=element_info[ele]
-        self.timeout = 10
 
-        self.wait = WebDriverWait(driver, self.timeout)
+    def __init__(self, num, driver):
+        self.elemented=element_info.getitem()[num]
+        self.timeout = 10
+        self.driver=driver
+        self.wait = WebDriverWait(self.driver, self.timeout)
         #这是一个显示的等待，等待10s时间中等待后面条件发生，如果未发生报出超时问题，
         # 在等待过程中默认每0.5s访问一下看条件是否发生
 
     @staticmethod
-    def locate(func, eles):
-        option, value=eles
+    def locate(func, ele):
+        option, value=ele
         return func(getattr(By, option), value)
 
     #这个函数主要是用来分离定位信息的，将定位信息完整的获取，并返回在下面的函数中
+
     def locate_element(self):
         print(f"now find {self.elemented}" )
         return Locate_Element.locate(lambda *args: self.wait.until\
@@ -60,29 +66,28 @@ class Locate_Element():
         log.info(f"same element: {(self.elemented,number)}")
         return number
 class Kb_Ms(Locate_Element):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, num ,driver):
+        super().__init__(num, driver)
         def action(self, actions, *args):
             actions(self.locate_element(), *args).perform()
-        self.left_click = partial(action, actions=ActionChains(driver).click)
-        self.right_click = partial(action, actions=ActionChains(driver).context_click)
-        self.double_click = partial(action, actions=ActionChains(driver).double_click)
-        self.click_hold = partial(action, actions=ActionChains(driver).click_and_hold)
-        self.mv_to_ele = partial(action, actions=ActionChains(driver).move_to_element)
+        self.left_click = partial(action, actions=ActionChains(self.driver).click)
+        self.right_click = partial(action, actions=ActionChains(self.driver).context_click)
+        self.double_click = partial(action, actions=ActionChains(self.driver).double_click)
+        self.click_hold = partial(action, actions=ActionChains(self.driver).click_and_hold)
+        self.mv_to_ele = partial(action, actions=ActionChains(self.driver).move_to_element)
         self.send_keys = partial(action, actions=lambda element, keys: \
-            ActionChains(driver).send_keys_to_element(element, keys))
+            ActionChains(self.driver).send_keys_to_element(element, keys))
         self.submit = partial(action, actions=lambda element: \
-            ActionChains(driver).key_down(Keys.ENTER, element))
+            ActionChains(self.driver).key_down(Keys.ENTER, element))
 
 
     def refresh(self):
         """刷新页面F5"""
-        driver.refresh()
-        driver.implicitly_wait(10)
+        self.driver.refresh()
+        self.driver.implicitly_wait(10)
 
-ele='搜索框'
-act=Locate_Element(ele)
-act.locate_element()
+
+
 
 
 

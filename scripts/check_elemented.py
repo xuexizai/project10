@@ -10,7 +10,7 @@ def check_elemented():
         with open(files, encoding='utf-8')as f:
             data = yaml.safe_load(f)
         if data:
-            for k in data.value:
+            for k in data.values():
                 try:
                     option, value = k.split('==')
                 except:
